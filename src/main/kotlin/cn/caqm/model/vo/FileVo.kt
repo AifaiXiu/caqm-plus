@@ -1,6 +1,7 @@
 package cn.caqm.model.vo
 
 class FileVo(
+    var id: Long? = null,
     /**
      * 8:File
      */

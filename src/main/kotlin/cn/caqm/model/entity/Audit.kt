@@ -22,7 +22,7 @@ data class Audit(
     var airportId: Long? = null,
     var processId: Long? = null,
     var mainAuditorId: Long? = null,
-    var otherAuditorsId: Long? = null,
+    var otherAuditorsId: String? = null,
     var auditMethodId: Long? = null,
     /*
      * o：计划

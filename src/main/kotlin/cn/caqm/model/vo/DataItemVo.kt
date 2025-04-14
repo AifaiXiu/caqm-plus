@@ -1,6 +1,7 @@
 package cn.caqm.model.vo
 
 class DataItemVo(
+    var id: Long? = null,
     /**
      * 0:Airport
      * 1:AuditMethod

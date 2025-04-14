@@ -45,7 +45,7 @@ class FileController {
         @PathVariable id: Long,
     ): Result<Void> {
         dataItemRepo.deleteById(id)
-        return Result.success(null, "数据项删除成功")
+        return Result.success(null, "文件删除成功")
     }
 
     @PostMapping("/by-ids")

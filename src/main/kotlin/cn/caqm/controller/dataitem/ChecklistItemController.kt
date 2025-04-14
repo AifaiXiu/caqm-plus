@@ -2,9 +2,13 @@ package cn.caqm.controller.dataitem
 
 import cn.caqm.common.Result
 import cn.caqm.model.entity.DataItem
+import cn.caqm.model.vo.ChecklistItemVo
 import cn.caqm.repo.DataItemRepo
+import cn.caqm.repo.FindingRepo
+import cn.caqm.repo.UserRepo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -21,15 +25,74 @@ class ChecklistItemController {
     @Autowired
     private lateinit var dataItemRepo: DataItemRepo
 
+    @Autowired
+    private lateinit var userRepo: UserRepo
+
+    @Autowired
+    private lateinit var findingRepo: FindingRepo
+
     // 只查询所有的检查单项的内容
     @GetMapping
-    fun getChecklistItems(
+    fun getAllChecklistItems(
         @RequestParam page: Int,
         @RequestParam size: Int,
-    ): Result<Page<DataItem>> {
-        // TODO 把type为9的值全部查出来
-        val dataItems = dataItemRepo.findAllByTypeIn(listOf(9), PageRequest.of(page, size))
-        return Result.success(dataItems)
+    ): Result<Page<ChecklistItemVo>> {
+        val pageable = PageRequest.of(page, size)
+        val dataItems = dataItemRepo.findAllByTypeIn(listOf(9), pageable)
+        val checklistItemVos =
+            dataItems.content.map { item ->
+                val checklistItemFiles =
+                    item.checklistItemFilesIds
+                        ?.split(
+                            ",",
+                        )?.mapNotNull { dataItemRepo.findById(it.toLong()).orElse(null) }
+                val auditors = item.auditorsIds?.split(",")?.mapNotNull { userRepo.findById(it.toLong()).orElse(null) }
+                val finding = item.findingId?.let { findingRepo.findById(it).orElse(null) }
+                ChecklistItemVo(
+                    id = item.id,
+                    type = item.type,
+                    checklistItemName = item.checklistItemName,
+                    checklistItemContent = item.checklistItemContent,
+                    checklistItemFiles = checklistItemFiles,
+                    checklistItemRemark = item.checklistItemRemark,
+                    checklistNote = item.checklistNote,
+                    auditors = auditors,
+                    finding = finding,
+                    status = item.status,
+                    checklistItemsFiles = checklistItemFiles,
+                )
+            }
+        val checklistItemVoPage = PageImpl(checklistItemVos, pageable, dataItems.totalElements)
+        return Result.success(checklistItemVoPage)
+    }
+
+    @GetMapping("/{id}")
+    fun getChecklistItemById(
+        @PathVariable id: Long,
+    ): Result<ChecklistItemVo?> {
+        val item = dataItemRepo.findById(id).orElse(null)
+        return if (item != null) {
+            val checklistItemFiles = item.checklistItemFilesIds?.split(",")?.mapNotNull { dataItemRepo.findById(it.toLong()).orElse(null) }
+            val auditors = item.auditorsIds?.split(",")?.mapNotNull { userRepo.findById(it.toLong()).orElse(null) }
+            val finding = item.findingId?.let { findingRepo.findById(it).orElse(null) }
+            val checklistItemVo =
+                ChecklistItemVo(
+                    id = item.id,
+                    type = item.type,
+                    checklistItemName = item.checklistItemName,
+                    checklistItemContent = item.checklistItemContent,
+                    checklistItemFiles = checklistItemFiles,
+                    checklistItemRemark = item.checklistItemRemark,
+                    checklistNote = item.checklistNote,
+                    auditors = auditors,
+                    finding = finding,
+                    status = item.status,
+                    checklistItemsFiles = checklistItemFiles,
+                )
+            Result.success(checklistItemVo)
+        } else {
+            Result.failure("检查单项未找到", 404)
+        }
     }
 
     // 新增检查单项
@@ -46,16 +109,38 @@ class ChecklistItemController {
         @PathVariable id: Long,
     ): Result<Void> {
         dataItemRepo.deleteById(id)
-        return Result.success(null, "数据项删除成功")
+        return Result.success(null, "检查单项删除成功")
     }
 
     @PostMapping("/by-ids")
-    fun getFilesByIds(
+    fun getChecklistItemsByIds(
         @RequestBody idsRequest: IdsRequest,
-    ): Result<List<DataItem>> {
-        println(idsRequest.toString() + "打印输出了")
-        val ids = idsRequest.ids?.split(",")?.map { it.toLong() }
-        val files = ids?.let { dataItemRepo.findAllByIdInAndTypeIn(it, listOf(9)) }
-        return Result.success(files)
+    ): Result<List<ChecklistItemVo>> {
+        val ids = idsRequest.ids?.split(",")?.mapNotNull { it.toLongOrNull() }
+        val items = ids?.let { dataItemRepo.findAllByIdIn(it) }
+        val checklistItemVos =
+            items?.map { item ->
+                val checklistItemFiles =
+                    item.checklistItemFilesIds
+                        ?.split(
+                            ",",
+                        )?.mapNotNull { dataItemRepo.findById(it.toLong()).orElse(null) }
+                val auditors = item.auditorsIds?.split(",")?.mapNotNull { userRepo.findById(it.toLong()).orElse(null) }
+                val finding = item.findingId?.let { findingRepo.findById(it).orElse(null) }
+                ChecklistItemVo(
+                    id = item.id,
+                    type = item.type,
+                    checklistItemName = item.checklistItemName,
+                    checklistItemContent = item.checklistItemContent,
+                    checklistItemFiles = checklistItemFiles,
+                    checklistItemRemark = item.checklistItemRemark,
+                    checklistNote = item.checklistNote,
+                    auditors = auditors,
+                    finding = finding,
+                    status = item.status,
+                    checklistItemsFiles = checklistItemFiles,
+                )
+            }
+        return Result.success(checklistItemVos)
     }
 }

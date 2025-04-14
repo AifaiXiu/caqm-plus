@@ -17,4 +17,6 @@ interface DataItemRepo : JpaRepository<DataItem, Long> {
         types: List<Int>,
         pageable: Pageable,
     ): Page<DataItem>
+
+    fun findAllByIdIn(ids: List<Long>): List<DataItem>
 }

@@ -1,30 +1,24 @@
-package cn.caqm.model.entity
+package cn.caqm.model.vo
 
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import cn.caqm.model.entity.Audit
+import cn.caqm.model.entity.DataItem
+import cn.caqm.model.entity.User
 import java.time.LocalDateTime
 
-@Entity
-@Table(name = "finding")
-data class Finding(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long,
-    var auditId: Long? = null,
+class FindingVo(
+    var id: Long? = null,
+    var audit: Audit? = null,
     /*
      * 1:开启
      * 0:关闭
      * */
     var status: Int? = null,
-    var processId: Long? = null,
-    var airportId: Long? = null,
-    var closeUserId: Long? = null,
+    var process: DataItem? = null,
+    var airport: DataItem? = null,
+    var closeUser: User? = null,
     var targetCloseTime: LocalDateTime? = null,
-    var deptId: Long? = null,
-    var findingTypeId: Long? = null,
+    var dept: DataItem? = null,
+    var findingType: DataItem? = null,
     /**
      * 详细内容
      */
@@ -32,8 +26,8 @@ data class Finding(
     /**
      * 下面是和措施有关的
      */
-    var measureDutyManId: Long? = null,
-    var finisherId: Long? = null,
+    var measureDutyMan: User? = null,
+    var finisher: User? = null,
     var targetDate: LocalDateTime? = null,
     var finishDate: LocalDateTime? = null,
     var details: String? = null,
@@ -45,9 +39,9 @@ data class Finding(
     /**
      *风险分析评估相关的:
      */
-    var rootAnalyzeId: Long? = null,
-    var relatedDeptId: Long? = null,
-    var evaluateDutyManId: Long? = null,
+    var rootAnalyze: DataItem? = null,
+    var relatedDept: DataItem? = null,
+    var evaluateDutyMan: User? = null,
     /*
      * 0:高
      * 1:中
