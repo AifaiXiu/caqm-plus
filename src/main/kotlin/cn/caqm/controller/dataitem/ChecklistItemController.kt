@@ -66,6 +66,38 @@ class ChecklistItemController {
         return Result.success(checklistItemVoPage)
     }
 
+    @PostMapping("/detail")
+    fun updateChecklistItem(
+        @RequestBody checklistItemDetail: ChecklistItemDetail,
+    ): Result<DataItem> {
+        val id = checklistItemDetail.id
+        return try {
+            val checklistItemRemark = checklistItemDetail.checklistItemRemark
+            val status = checklistItemDetail.status
+
+            val optionalItem = dataItemRepo.findById(id)
+            if (optionalItem.isPresent) {
+                val item = optionalItem.get()
+
+                // 更新所需字段
+                if (checklistItemRemark != null) {
+                    item.checklistItemRemark = checklistItemRemark
+                }
+                if (status != null) {
+                    item.status = status
+                }
+
+                // 保存更新后的 DataItem
+                val updatedItem = dataItemRepo.save(item)
+                Result.success(updatedItem, "修改成功")
+            } else {
+                Result.failure("未找到 ID 为 $id 的检查单项")
+            }
+        } catch (e: Exception) {
+            Result.failure("更新检查单项失败: ${e.message}")
+        }
+    }
+
     @GetMapping("/{id}")
     fun getChecklistItemById(
         @PathVariable id: Long,
@@ -117,6 +149,7 @@ class ChecklistItemController {
         @RequestBody idsRequest: IdsRequest,
     ): Result<List<ChecklistItemVo>> {
         val ids = idsRequest.ids?.split(",")?.mapNotNull { it.toLongOrNull() }
+        ids!!.forEach { println(it) }
         val items = ids?.let { dataItemRepo.findAllByIdIn(it) }
         val checklistItemVos =
             items?.map { item ->
@@ -141,6 +174,13 @@ class ChecklistItemController {
                     checklistItemsFiles = checklistItemFiles,
                 )
             }
+
         return Result.success(checklistItemVos)
     }
 }
+
+data class ChecklistItemDetail(
+    var id: Long,
+    var checklistItemRemark: String,
+    var status: Int,
+)

@@ -39,7 +39,7 @@ data class Finding(
     var details: String? = null,
     /*
      * 0:跟进措施
-     * 1：纠正措施
+     * 1：纠正措施:现在只保留一个纠正措施
      * */
     var measureType: Int? = null,
     /**

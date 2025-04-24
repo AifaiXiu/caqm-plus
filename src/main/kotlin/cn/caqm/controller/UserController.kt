@@ -22,6 +22,35 @@ class UserController {
     @Autowired
     private lateinit var dataItemRepo: DataItemRepo
 
+    // 用户登录接口
+    @PostMapping("/login")
+    fun login(
+        @RequestBody loginRequest: LoginRequest,
+    ): Result<User> {
+        // 1. 参数验证
+        if (loginRequest.username.isNullOrBlank() || loginRequest.passwd.isNullOrBlank()) {
+            return Result.failure("用户名和密码不能为空")
+        }
+
+        try {
+            // 2. 查找用户
+            val user =
+                userRepo.findByUsername(loginRequest.username)
+                    ?: return Result.failure("用户不存在")
+
+            // 3. 验证密码
+            if (user.passwd != loginRequest.passwd) {
+                return Result.failure("密码错误")
+            }
+
+            // 4. 返回用户信息
+            return Result.success(user, "登录成功")
+        } catch (e: Exception) {
+            // 5. 异常处理
+            return Result.failure("登录失败: ${e.message}")
+        }
+    }
+
     // 分页查询所有用户
     @GetMapping
     fun getAllUsers(
@@ -121,4 +150,9 @@ class UserController {
 // 定义请求体类
 data class IdsRequest(
     val ids: String? = null,
+)
+
+data class LoginRequest(
+    val username: String = "",
+    val passwd: String = "",
 )

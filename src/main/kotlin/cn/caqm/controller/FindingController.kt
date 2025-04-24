@@ -1,6 +1,11 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package cn.caqm.controller
 
 import cn.caqm.common.Result
+import cn.caqm.model.dto.FindingBasicDto
+import cn.caqm.model.dto.FindingEvaluateDto
+import cn.caqm.model.dto.FindingMeasureDto
 import cn.caqm.model.entity.Finding
 import cn.caqm.model.vo.FindingVo
 import cn.caqm.repo.AuditRepo
@@ -207,6 +212,156 @@ class FindingController {
             Result.success(findingVo)
         } else {
             Result.failure("发现未找到", 404)
+        }
+    }
+
+//    @PostMapping("/basic")
+//    fun updateFindingBasic(
+//        @RequestBody findingBasicDto: FindingBasicDto,
+//    ) {
+//        var id = findingBasicDto.id
+//        // 把对应id下的finding的下面字段全部修改
+//        var auditId = findingBasicDto.auditId
+//        var closeUserId = findingBasicDto.closeUserId
+//        var findingTypeId = findingBasicDto.findingTypeId
+//        var processId = findingBasicDto.processId
+//        var airportId = findingBasicDto.airportId
+//        var deptId = findingBasicDto.deptId
+//        var targetCloseTime = findingBasicDto.targetCloseTime
+//        var evaluateResult = findingBasicDto.evaluateResult
+//    }
+//
+//    @PostMapping("/evaluate")
+//    fun updateFindingEvaluate(
+//        @RequestBody findingEvaluateDto: FindingEvaluateDto,
+//    ) {
+//        var id = findingEvaluateDto.id
+//        // 把对应id下的finding的下面字段全部修改
+//        var rootAnalyzeId = findingEvaluateDto.rootAnalyzeId
+//        val relatedDeptId = findingEvaluateDto.relatedDeptId
+//        val evaluateDutyManId = findingEvaluateDto.evaluateDutyManId
+//        val eventDescribe = findingEvaluateDto.eventDescribe
+//        val executeDate = findingEvaluateDto.executeDate
+//        var possibility = findingEvaluateDto.possibility
+//        var severity = findingEvaluateDto.severity
+//        var riskValue = findingEvaluateDto.riskValue
+//        var isSecure = findingEvaluateDto.isSecure
+//    }
+//
+//    @PostMapping("/measure")
+//    fun updateFindingMeasure(
+//        @RequestBody findingMeasureDto: FindingMeasureDto,
+//    ) {
+//        var id = findingMeasureDto.id
+//        // 把对应id下的finding的下面字段全部修改
+//        var measureDutyManId = findingMeasureDto.measureDutyManId
+//        var finisherId = findingMeasureDto.finisherId
+//        var targetDate = findingMeasureDto.targetDate
+//        var finishDate = findingMeasureDto.finishDate
+//        var details = findingMeasureDto.details
+//    }
+
+    @PostMapping("/basic")
+    fun updateFindingBasic(
+        @RequestBody findingBasicDto: FindingBasicDto,
+    ): Result<Finding> {
+        val id = findingBasicDto.id ?: return Result.failure("ID不能为空")
+
+        // 查找现有记录
+        return try {
+            val finding =
+                findingRepo
+                    .findById(id)
+                    .orElseThrow { NoSuchElementException("找不到ID为 $id 的不符合项") }
+
+            // 更新基本信息字段
+            finding.apply {
+                findingBasicDto.auditId?.let { auditId = it }
+                findingBasicDto.closeUserId?.let { closeUserId = it }
+                findingBasicDto.findingTypeId?.let { findingTypeId = it }
+                findingBasicDto.processId?.let { processId = it }
+                findingBasicDto.airportId?.let { airportId = it }
+                findingBasicDto.deptId?.let { deptId = it }
+                findingBasicDto.targetCloseTime?.let { targetCloseTime = it }
+                findingBasicDto.evaluateResult?.let { evaluateResult = it }
+                findingBasicDto.status?.let { status = it }
+            }
+
+            // 保存更新后的记录
+            val updatedFinding = findingRepo.save(finding)
+            Result.success(updatedFinding, "基本信息更新成功")
+        } catch (e: NoSuchElementException) {
+            Result.failure(e.message ?: "找不到记录")
+        } catch (e: Exception) {
+            Result.failure("更新基本信息失败: ${e.message}")
+        }
+    }
+
+    @PostMapping("/evaluate")
+    fun updateFindingEvaluate(
+        @RequestBody findingEvaluateDto: FindingEvaluateDto,
+    ): Result<Finding> {
+        val id = findingEvaluateDto.id ?: return Result.failure("ID不能为空")
+
+        // 查找现有记录
+        return try {
+            val finding =
+                findingRepo
+                    .findById(id)
+                    .orElseThrow { NoSuchElementException("找不到ID为 $id 的不符合项") }
+
+            // 更新风险评估相关字段
+            finding.apply {
+                findingEvaluateDto.rootAnalyzeId?.let { rootAnalyzeId = it }
+                findingEvaluateDto.relatedDeptId?.let { relatedDeptId = it }
+                findingEvaluateDto.evaluateDutyManId?.let { evaluateDutyManId = it }
+                findingEvaluateDto.eventDescribe?.let { eventDescribe = it }
+                findingEvaluateDto.executeDate?.let { executeDate = it }
+                findingEvaluateDto.possibility?.let { possibility = it }
+                findingEvaluateDto.severity?.let { severity = it }
+                findingEvaluateDto.riskValue?.let { riskValue = it }
+                findingEvaluateDto.isSecure?.let { isSecure = it }
+            }
+
+            // 保存更新后的记录
+            val updatedFinding = findingRepo.save(finding)
+            Result.success(updatedFinding, "风险评估信息更新成功")
+        } catch (e: NoSuchElementException) {
+            Result.failure(e.message ?: "找不到记录")
+        } catch (e: Exception) {
+            Result.failure("更新风险评估失败: ${e.message}")
+        }
+    }
+
+    @PostMapping("/measure")
+    fun updateFindingMeasure(
+        @RequestBody findingMeasureDto: FindingMeasureDto,
+    ): Result<Finding> {
+        val id = findingMeasureDto.id ?: return Result.failure("ID不能为空")
+
+        // 查找现有记录
+        return try {
+            val finding =
+                findingRepo
+                    .findById(id)
+                    .orElseThrow { NoSuchElementException("找不到ID为 $id 的不符合项") }
+
+            // 更新措施相关字段
+            finding.apply {
+                findingMeasureDto.measureDutyManId?.let { measureDutyManId = it }
+                findingMeasureDto.finisherId?.let { finisherId = it }
+                findingMeasureDto.targetDate?.let { targetDate = it }
+                findingMeasureDto.finishDate?.let { finishDate = it }
+                findingMeasureDto.details?.let { details = it }
+            }
+
+            // 保存更新后的记录
+            val updatedFinding = findingRepo.save(finding)
+            Result.success(updatedFinding, "措施信息更新成功")
+        } catch (e: NoSuchElementException) {
+            Result.failure(e.message ?: "找不到记录")
+        } catch (e: Exception) {
+            Result.failure("更新措施信息失败: ${e.message}")
         }
     }
 }
